@@ -1,0 +1,217 @@
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #0056b3;
+    --light-bg: #ffffff;
+    --dark-bg: #121212;
+    --light-text: #212529;
+    --dark-text: #e0e0e0;
+    --light-card-bg: #ffffff;
+    --dark-card-bg: #1e1e1e;
+    --light-border: #e0e0e0;
+    --dark-border: #333333;
+    --success-color: #28a745;
+    --danger-color: #dc3545;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--light-text);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+.hidden { display: none !important; }
+
+/* --- Navigation --- */
+nav {
+    background-color: var(--light-card-bg);
+    padding: 0.75rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--light-border);
+}
+#welcome-message { font-size: 1.2rem; font-weight: bold; }
+.nav-controls { display: flex; align-items: center; gap: 1rem; }
+.nav-link-box { padding: 8px 16px; border: 1px solid var(--light-border); border-radius: 20px; transition: background-color 0.2s ease; }
+.nav-link-box:hover { background-color: #f0f0f0; }
+.nav-link-box a { color: var(--light-text); text-decoration: none; font-weight: 600; }
+.driver-only { display: none; } /* JS will show this for drivers */
+
+/* --- Auth Page & Forms --- */
+#auth-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+#auth-container { max-width: 420px; width: 100%; }
+.form-container { padding: 2.5rem; background: var(--light-card-bg); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); text-align: center; border: 1px solid var(--light-border); }
+h1, h2 { margin-bottom: 1.5rem; }
+form, .view-form { display: flex; flex-direction: column; }
+.view-form {
+    /* Change the max-width to a larger value like 900px */
+    max-width: 900px;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+}
+input, select { padding: 12px 15px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; font-family: 'Poppins', sans-serif; background-color: var(--light-bg); color: var(--light-text); }
+button { padding: 14px; border: none; background: linear-gradient(45deg, var(--secondary-color), var(--primary-color)); color: white; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; }
+.toggle-link { text-align: center; margin-top: 1.5rem; }
+.toggle-link a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
+
+.page {
+    /* This forces the content (heading, forms, results) to stack vertically */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Horizontally centers the content block */
+    width: 100%;
+}
+
+.page h1 {
+    /* This ensures the heading takes its own line */
+    width: 100%;
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+}
+
+.results-container {
+    /* The existing two-column grid layout */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+
+    /* New rules to control the width and prevent it from stretching too far */
+    width: 90%;
+    max-width: 1200px; /* Adjust this value as needed for large screens */
+}
+
+.card {
+    background: var(--light-card-bg);
+    border: 1px solid var(--light-border);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Slightly more prominent shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    padding: 20px; /* Add internal padding to the card itself */
+}
+
+.card-content {
+    padding: 0; /* Remove padding as it's now on the card itself */
+    margin-bottom: 15px; /* Space between content and actions/bookings */
+}
+
+.card p {
+    margin-bottom: 8px; /* Slightly more space between text lines */
+    font-size: 1.05rem; /* Make text a bit larger for readability */
+}
+
+.card p strong {
+    color: var(--primary-color); /* Highlight key info */
+}
+
+.card-actions {
+    padding: 0; /* Remove padding */
+    margin-top: auto; /* Push buttons to the bottom */
+    display: flex; /* Use flex for button layout */
+    justify-content: flex-end; /* Align button to the right */
+}
+
+.card-actions button {
+    padding: 10px 20px; /* Larger buttons */
+    font-size: 1rem;
+    border-radius: 8px; /* Consistent rounded corners */
+}
+
+.bookings-list {
+    margin-top: 20px; /* More space above the bookings list */
+    padding-top: 20px;
+    border-top: 1px solid var(--light-border);
+}
+
+.booking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0; /* More vertical padding for each booking item */
+    border-bottom: 1px dashed var(--light-border); /* Dashed line for subtle separation */
+}
+
+.booking-item:last-child {
+    border-bottom: none; /* No border for the last item */
+}
+
+.booking-item span {
+    font-size: 0.95rem; /* Make booking item text slightly larger */
+}
+
+.booking-actions {
+    display: flex;
+    gap: 10px; /* Space between confirm/cancel buttons */
+}
+
+.booking-item button {
+    padding: 8px 15px; /* Larger booking action buttons */
+    font-size: 0.9rem;
+    border-radius: 6px;
+    margin: 0; /* Override any default button margins */
+}
+
+/* Ensure headings have enough space */
+h1 {
+    margin-bottom: 30px; /* More space below the main heading */
+    font-size: 2.5rem; /* Larger heading */
+    text-align: center; /* Center the main heading */
+    color: var(--primary-color);
+}
+
+/* --- Toast Notifications --- */
+#toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1001; }
+.toast { color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-top: 10px; opacity: 0; transform: translateY(20px); transition: all 0.5s ease; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background-color: var(--success-color); }
+.toast.error { background-color: var(--danger-color); }
+
+/* --- Theme Toggle Button --- */
+#theme-toggle-btn {
+    background: none; border: 2px solid var(--light-text);
+    color: var(--light-text); font-size: 1.5rem; border-radius: 50%;
+    cursor: pointer; width: 45px; height: 45px; display: flex;
+    justify-content: center; align-items: center; padding: 0;
+    transition: all 0.2s ease;
+}
+#theme-toggle-btn:hover { transform: rotate(15deg) scale(1.1); }
+
+/* --- DARK MODE --- */
+body.dark-mode { background-color: var(--dark-bg); color: var(--dark-text); }
+body.dark-mode nav { background-color: #1a1a1a; border-bottom: 1px solid var(--dark-border); }
+body.dark-mode .nav-link-box a { color: var(--dark-text); }
+body.dark-mode .nav-link-box { border-color: #444; }
+body.dark-mode .nav-link-box:hover { background-color: rgba(255, 255, 255, 0.1); }
+body.dark-mode .form-container, body.dark-mode .card { background-color: var(--dark-card-bg); border: 1px solid var(--dark-border); }
+body.dark-mode input, body.dark-mode select { background-color: #2a2a2a; color: var(--dark-text); border-color: #444444; }
+body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--dark-text); }
+
+/* Styling for the rider's buttons on the "My Bookings" page */
+.cancel-booking-rider-btn,
+.remove-booking-btn {
+    background-color: var(--danger-color); /* Use the red color variable */
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.cancel-booking-rider-btn:hover,
+.remove-booking-btn:hover {
+    background-color: #a72835; /* A darker red for hover effect */
+}
