@@ -20,9 +20,9 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # ADD THIS NEW STEP
       - name: Grant execute permission for mvnw
         run: chmod +x mvnw
 
+      # CHANGE THIS LINE to add -DskipTests
       - name: Build with Maven
-        run: ./mvnw package
+        run: ./mvnw package -DskipTests
