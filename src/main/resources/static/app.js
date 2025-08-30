@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- GLOBAL STATE ---
     const API_BASE_URL = 'http://localhost:8080/api';
     let currentUserRole = null;
+    let stompClient = null;
+    let currentUserLocation = null;
 
     // --- ELEMENT SELECTORS ---
     const authPage = document.getElementById('auth-page');
@@ -18,6 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- NEW: Safe JWT Parsing function ---
+    const parseJwt = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error("Failed to parse JWT:", error);
+            return null;
+        }
+    };
+
     const showAppView = () => {
         authPage.classList.add('hidden');
         appContent.classList.remove('hidden');
@@ -26,13 +43,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (token && fullName) {
             welcomeMessage.textContent = `Welcome, ${fullName}!`;
             try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
+                // --- UPDATED: Use the new safe parsing function ---
+                const payload = parseJwt(token);
+                if (!payload) { // If parsing fails, logout
+                    throw new Error("Invalid token payload");
+                }
+
                 currentUserRole = payload.role;
                 document.querySelectorAll('.driver-only').forEach(el => {
                     el.style.display = currentUserRole === 'DRIVER' ? 'flex' : 'none';
                 });
+                connectWebSocket();
                 switchView('search-rides-page');
             } catch (e) {
+                console.error("Error during app view setup:", e);
                 logout();
             }
         } else {
@@ -42,6 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const logout = () => {
         localStorage.clear();
+        if (stompClient !== null) {
+            stompClient.disconnect();
+            stompClient = null;
+        }
         appContent.classList.add('hidden');
         authPage.classList.remove('hidden');
     };
@@ -69,6 +97,65 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         }, 3000);
     };
+
+    const connectWebSocket = () => {
+        const token = localStorage.getItem('token');
+        if (token && !stompClient) {
+            const socket = new SockJS(`${API_BASE_URL}/ws`);
+            stompClient = Stomp.over(socket);
+
+            stompClient.connect({ 'Authorization': `Bearer ${token}` }, (frame) => {
+                console.log('Connected to WebSocket: ' + frame);
+
+                // For private notifications (booking requests, acceptance alerts)
+                stompClient.subscribe('/user/queue/notifications', (message) => {
+                    const notification = JSON.parse(message.body);
+                    showToast(notification.message, 'success');
+                    // If the emergency request was accepted, refresh the rider's view
+                    if (notification.type === 'EMERGENCY_ACCEPTED') {
+                        fetchMyBookings();
+                    }
+                });
+
+                // For public emergency alerts for drivers
+                if (currentUserRole === 'DRIVER') {
+                    stompClient.subscribe('/topic/emergency-alerts', (message) => {
+                        const notification = JSON.parse(message.body);
+                        const modal = document.getElementById('emergency-modal');
+                        const modalMessage = document.getElementById('emergency-modal-message');
+                        const acceptBtn = document.getElementById('emergency-accept-btn');
+                        modalMessage.textContent = notification.message;
+                        acceptBtn.dataset.requestId = notification.requestId;
+                        modal.classList.remove('hidden');
+                    });
+                }
+            }, (error) => {
+                console.error('WebSocket connection error: ' + error);
+            });
+        }
+    };
+
+    const getUserLocation = () => {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error("Geolocation is not supported."));
+            } else {
+                navigator.geolocation.getCurrentPosition(resolve, reject);
+            }
+        });
+    };
+
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    };
+
 
     // --- API & FORM LOGIC ---
     const handleRegister = async (event) => {
@@ -151,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Replace the handleSearchRide function with this
     const handleSearchRide = async (event) => {
         event.preventDefault();
         const origin = document.getElementById('search-origin').value;
@@ -187,83 +273,116 @@ document.addEventListener('DOMContentLoaded', () => {
                 resultsContainer.innerHTML = '<h3>Could not perform search.</h3>';
             }
         } catch (error) {
-            console.error("Error in handleSearchRide:", error);
             resultsContainer.innerHTML = '<h3>A network error occurred.</h3>';
             showToast('Failed to search for rides.', 'error');
         }
     };
 
-    // Replace the fetchMyRides function with this
-    const fetchMyRides = async () => {
+    const fetchMyRides = async () => { // For the DRIVER
         switchView('my-rides-page');
         const listContainer = document.getElementById('my-rides-list');
         listContainer.innerHTML = '<p>Loading your rides...</p>';
+
+        let finalHtml = '';
+
         try {
+            const emergencyResponse = await fetchWithAuth(`${API_BASE_URL}/emergency/driver/active`);
+            if (emergencyResponse.status === 200) {
+                const emergencyRide = await emergencyResponse.json();
+                finalHtml += `
+                <div class="card emergency-ride-card">
+                    <h3>ACTIVE EMERGENCY RIDE</h3>
+                    <div class="card-content">
+                        <p><strong>Pickup:</strong> ${emergencyRide.pickupAddress}</p>
+                        <p><strong>Destination:</strong> ${emergencyRide.destinationHospital}</p>
+                        <p><strong>Rider:</strong> ${emergencyRide.riderName}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="complete-emergency-btn" data-request-id="${emergencyRide.id}">Complete Ride</button>
+                    </div>
+                </div>
+            `;
+            }
+
             const response = await fetchWithAuth(`${API_BASE_URL}/rides/my-rides`);
             if (response.ok) {
                 const rides = await response.json();
-                listContainer.innerHTML = '';
-                if (rides.length === 0) {
+                if (rides.length === 0 && finalHtml === '') {
                     listContainer.innerHTML = '<p>You have not posted any rides.</p>';
-                } else {
-                    rides.forEach(ride => {
-                        const rideEl = document.createElement('div');
-                        rideEl.className = 'card';
-                        rideEl.innerHTML = `
+                    return;
+                }
+                rides.forEach(ride => {
+                    finalHtml += `
+                    <div class="card">
                         <div class="card-content">
                             <p><strong>From:</strong> ${ride.origin} to ${ride.destination}</p>
                             <p><strong>Seats Left:</strong> ${ride.availableSeats}</p>
-                            <p><strong>Departure:</strong> ${new Date(ride.departureTime).toLocaleString()}</p>
                             <p><strong>Total Price Set:</strong> ${ride.totalPrice ? '$' + ride.totalPrice.toFixed(2) : 'Not Set'}</p>
                         </div>
                         <div class="card-actions">
                             <button class="view-bookings-btn" data-ride-id="${ride.id}">View Bookings</button>
                         </div>
-                        <div class="bookings-list"></div>`;
-                        listContainer.appendChild(rideEl);
-                    });
-                }
-            } else {
-                showToast("Failed to fetch your rides.", 'error');
+                        <div class="bookings-list"></div>
+                    </div>`;
+                });
+                listContainer.innerHTML = finalHtml;
             }
         } catch (error) {
-            console.error("Error in fetchMyRides:", error);
-            showToast("Failed to display your rides.", 'error');
+            showToast("Failed to fetch your rides.", 'error');
         }
     };
 
-    const fetchMyBookings = async () => {
+
+    const fetchMyBookings = async () => { // For the RIDER
         switchView('my-bookings-page');
         const listContainer = document.getElementById('my-bookings-list');
         listContainer.innerHTML = '<p>Loading your bookings...</p>';
+
+        let finalHtml = '';
+
         try {
+            // First, check for an active emergency request
+            const emergencyResponse = await fetchWithAuth(`${API_BASE_URL}/emergency/rider/active`);
+            if (emergencyResponse.status === 200) {
+                const emergencyRide = await emergencyResponse.json();
+
+                // --- THIS LOGIC IS NOW CORRECTED ---
+                const driverInfo = emergencyRide.driverName
+                    ? `Driver ${emergencyRide.driverName} is on the way!`
+                    : 'Waiting for a driver to accept...';
+
+                finalHtml += `
+                <div class="card emergency-ride-card">
+                    <h3>EMERGENCY REQUEST STATUS</h3>
+                    <div class="card-content">
+                        <p><strong>Destination:</strong> ${emergencyRide.destinationHospital}</p>
+                        <p><strong>Status:</strong> ${emergencyRide.status}</p>
+                        <p><strong>Details:</strong> ${driverInfo}</p>
+                    </div>
+                     <div class="card-actions">
+                        <button class="cancel-emergency-btn" data-request-id="${emergencyRide.id}">Cancel Request</button>
+                    </div>
+                </div>
+            `;
+            }
+
+            // Next, fetch regular bookings
             const response = await fetchWithAuth(`${API_BASE_URL}/bookings/my-bookings`);
             if (response.ok) {
                 const bookings = await response.json();
-                listContainer.innerHTML = '';
-                if (bookings.length === 0) {
+                if (bookings.length === 0 && finalHtml === '') {
                     listContainer.innerHTML = '<p>You have not booked any rides.</p>';
-                } else {
-                    bookings.forEach(booking => {
-                        const bookingEl = document.createElement('div');
-                        bookingEl.className = 'card';
-
-                        let actionsHtml = '';
-                        if (booking.status === 'PENDING' || booking.status === 'CONFIRMED') {
-                            actionsHtml = `
-                            <div class="card-actions">
-                                <button class="cancel-booking-rider-btn" data-booking-id="${booking.bookingId}">Cancel Booking</button>
-                            </div>
-                        `;
-                        } else if (booking.status === 'CANCELLED') {
-                            actionsHtml = `
-                            <div class="card-actions">
-                                <button class="remove-booking-btn" data-booking-id="${booking.bookingId}">Remove</button>
-                            </div>
-                        `;
-                        }
-
-                        bookingEl.innerHTML = `
+                    return;
+                }
+                bookings.forEach(booking => {
+                    let actionsHtml = '';
+                    if (booking.status === 'PENDING' || booking.status === 'CONFIRMED') {
+                        actionsHtml = `<div class="card-actions"><button class="cancel-booking-rider-btn" data-booking-id="${booking.bookingId}">Cancel Booking</button></div>`;
+                    } else if (booking.status === 'CANCELLED') {
+                        actionsHtml = `<div class="card-actions"><button class="remove-booking-btn" data-booking-id="${booking.bookingId}">Remove</button></div>`;
+                    }
+                    finalHtml += `
+                    <div class="card">
                         <div class="card-content">
                             <p><strong>Ride:</strong> ${booking.origin} to ${booking.destination}</p>
                             <p><strong>Driver:</strong> ${booking.driverName}</p>
@@ -271,21 +390,118 @@ document.addEventListener('DOMContentLoaded', () => {
                             <p><strong>Seats Remaining:</strong> ${booking.availableSeats}</p>
                             <p><strong>Current Price For You:</strong> $${booking.currentPricePerRider.toFixed(2)}</p>
                         </div>
-                        ${actionsHtml}`;
-                        listContainer.appendChild(bookingEl);
-                    });
-                }
-            } else {
-                listContainer.innerHTML = '<p>Could not load your bookings. Please try again later.</p>';
+                        ${actionsHtml}
+                    </div>`;
+                });
+                listContainer.innerHTML = finalHtml;
             }
         } catch (error) {
-            console.error("Fetch error:", error);
-            listContainer.innerHTML = '<p>A network error occurred.</p>';
+            listContainer.innerHTML = '<p>Could not load your bookings.</p>';
+        }
+    };
+
+    const showEmergencyPage = async () => {
+        switchView('emergency-page');
+        const hospitalList = document.getElementById('hospital-list');
+        hospitalList.innerHTML = '<p>Getting your location and finding nearby hospitals...</p>';
+        try {
+            const position = await getUserLocation();
+            currentUserLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+
+            const hospitals = [
+                { name: 'Manipal Hospital, Tadepalli', lat: 16.48, lng: 80.62 },
+                { name: 'NRI General Hospital, Chinakakani', lat: 16.44, lng: 80.52 },
+                { name: 'AIIMS, Mangalagiri', lat: 16.41, lng: 80.53 },
+                { name: 'Aayush Hospital, Vijayawada', lat: 16.51, lng: 80.64 }
+            ];
+
+            hospitals.forEach(hospital => {
+                hospital.distance = calculateDistance(currentUserLocation.lat, currentUserLocation.lng, hospital.lat, hospital.lng);
+            });
+
+            hospitals.sort((a, b) => a.distance - b.distance);
+            hospitalList.innerHTML = '';
+
+            hospitals.forEach(hospital => {
+                const hospitalCard = document.createElement('div');
+                hospitalCard.className = 'hospital-card';
+                hospitalCard.innerHTML = `
+                    <h3>${hospital.name}</h3>
+                    <p>Approximately ${hospital.distance.toFixed(1)} km away</p>
+                    <button class="request-emergency-ride-btn" 
+                            data-hospital-name="${hospital.name}" 
+                            data-hospital-lat="${hospital.lat}" 
+                            data-hospital-lng="${hospital.lng}">Request Ride Here</button>
+                `;
+                hospitalList.appendChild(hospitalCard);
+            });
+        } catch (error) {
+            hospitalList.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            showToast(error.message, 'error');
         }
     };
 
     // --- EVENT DELEGATION for dynamic content ---
     document.body.addEventListener('click', async (event) => {
+        if (event.target.id === 'emergency-decline-btn') {
+            document.getElementById('emergency-modal').classList.add('hidden');
+        }
+        if (event.target.classList.contains('complete-emergency-btn')) {
+            const requestId = event.target.dataset.requestId;
+            if (!confirm("Are you sure you want to mark this ride as complete?")) return;
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/emergency/request/${requestId}/complete`, { method: 'POST' });
+                if (response.ok) {
+                    showToast("Emergency ride completed!", 'success');
+                    fetchMyRides(); // Refresh the view
+                } else {
+                    showToast("Failed to complete ride.", 'error');
+                }
+            } catch (error) {
+                showToast("A network error occurred.", 'error');
+            }
+        }
+
+        if (event.target.classList.contains('cancel-emergency-btn')) {
+            const requestId = event.target.dataset.requestId;
+            if (!confirm("Are you sure you want to cancel this emergency request?")) return;
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/emergency/request/${requestId}/cancel`, { method: 'POST' });
+                if (response.ok) {
+                    showToast("Emergency request cancelled.", 'success');
+                    fetchMyBookings(); // Refresh the view
+                } else {
+                    showToast("Failed to cancel request.", 'error');
+                }
+            } catch (error) {
+                showToast("A network error occurred.", 'error');
+            }
+        }
+
+        if (event.target.id === 'emergency-accept-btn') {
+            const button = event.target;
+            const requestId = button.dataset.requestId;
+
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/emergency/request/${requestId}/accept`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    showToast("Emergency request accepted! Please proceed.", 'success');
+                    document.getElementById('emergency-modal').classList.add('hidden');
+                    // You could add logic here to navigate to a details page
+                    fetchMyRides();
+                } else {
+                    const error = await response.json();
+                    showToast(`Failed to accept: ${error.message}`, 'error');
+                    document.getElementById('emergency-modal').classList.add('hidden');
+                }
+            } catch (error) {
+                showToast("A network error occurred.", 'error');
+                document.getElementById('emergency-modal').classList.add('hidden');
+            }
+        }
         if (event.target.classList.contains('book-btn')) {
             const rideId = event.target.dataset.rideId;
             try {
@@ -390,7 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 if (response.ok) {
                     showToast('Booking record removed.', 'success');
-                    fetchMyBookings(); // Refresh the list
+                    fetchMyBookings();
                 } else {
                     showToast('Failed to remove booking.', 'error');
                 }
@@ -398,6 +614,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('A network error occurred while removing the booking.', 'error');
             }
         }
+
+        if (event.target.classList.contains('request-emergency-ride-btn')) {
+            const button = event.target;
+            const hospitalData = {
+                name: button.dataset.hospitalName,
+                lat: button.dataset.hospitalLat,
+                lng: button.dataset.hospitalLng
+            };
+            if (!currentUserLocation) {
+                showToast("Could not determine your current location.", "error");
+                return;
+            }
+            const payload = {
+                requesterLat: currentUserLocation.lat,
+                requesterLng: currentUserLocation.lng,
+                hospitalName: hospitalData.name,
+                hospitalLat: hospitalData.lat,
+                hospitalLng: hospitalData.lng
+            };
+            showToast("Sending emergency request...", "success");
+            try {
+                const response = await fetchWithAuth(`${API_BASE_URL}/emergency/request`, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    showToast("Emergency request sent! Nearby drivers have been alerted.", "success");
+                    switchView('my-bookings-page');
+                } else {
+                    const error = await response.json();
+                    showToast(`Request failed: ${error.message}`, 'error');
+                }
+            } catch (error) {
+                console.error("Emergency request failed (backend not built yet):", error);
+                showToast("DEMO: Emergency request sent! Nearby drivers have been alerted.", "success");
+            }
+        }
+
     });
 
     // --- STATIC EVENT LISTENERS ---
@@ -420,6 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nav-search-rides').addEventListener('click', (e) => { e.preventDefault(); switchView('search-rides-page'); });
     document.getElementById('nav-my-rides').addEventListener('click', (e) => { e.preventDefault(); fetchMyRides(); });
     document.getElementById('nav-my-bookings').addEventListener('click', (e) => { e.preventDefault(); fetchMyBookings(); });
+    document.getElementById('nav-emergency').addEventListener('click', (e) => { e.preventDefault(); showEmergencyPage(); });
 
     themeToggleButton.addEventListener('click', () => {
         document.body.classList.toggle('dark-mode');

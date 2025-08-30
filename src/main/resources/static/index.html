@@ -49,6 +49,7 @@
         <span id="welcome-message"></span>
         <div class="nav-controls">
             <button id="theme-toggle-btn">&#9728;</button>
+            <div class="nav-link-box emergency-btn"><a href="#" id="nav-emergency">Emergency</a></div>
             <div class="nav-link-box driver-only"><a href="#" id="nav-post-ride">Post a Ride</a></div>
             <div class="nav-link-box driver-only"><a href="#" id="nav-my-rides">My Rides</a></div>
             <div class="nav-link-box"><a href="#" id="nav-search-rides">Search Rides</a></div>
@@ -69,7 +70,6 @@
                 <button type="submit">Post Ride</button>
             </form>
         </div>
-
         <div id="search-rides-page" class="page hidden">
             <h1>Search for Rides</h1>
             <form id="search-ride-form" class="view-form">
@@ -79,20 +79,40 @@
             </form>
             <div id="ride-results" class="results-container"></div>
         </div>
-
         <div id="my-rides-page" class="page hidden driver-only">
             <h1>My Posted Rides</h1>
             <div id="my-rides-list" class="results-container"></div>
         </div>
-
         <div id="my-bookings-page" class="page hidden">
             <h1>My Bookings</h1>
             <div id="my-bookings-list" class="results-container"></div>
         </div>
+
+        <div id="emergency-page" class="page hidden">
+            <h1>Emergency Ride Request</h1>
+            <p class="emergency-instructions">Requesting an urgent ride to a hospital. Your location will be shared with available drivers upon request.</p>
+            <div id="hospital-list-container">
+                <h2>Select a Nearby Hospital:</h2>
+                <div id="hospital-list" class="results-container">
+                </div>
+            </div>
+        </div>
+
     </main>
 </section>
-
+<div id="emergency-modal" class="hidden">
+    <div class="modal-content">
+        <h2>Emergency Ride Request!</h2>
+        <p id="emergency-modal-message">A user needs an urgent ride.</p>
+        <div class="modal-actions">
+            <button id="emergency-accept-btn" >Accept</button>
+            <button id="emergency-decline-btn" >Decline</button>
+        </div>
+    </div>
+</div>
 <div id="toast-container"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 <script src="app.js"></script>
 
 </body>

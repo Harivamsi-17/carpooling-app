@@ -1,26 +1,59 @@
 package com.carpool.carpoolingapp.controller;
 
-import com.carpool.carpoolingapp.dto.EmergencyRequest;
-import com.carpool.carpoolingapp.service.EmergencyDispatchService;
+import com.carpool.carpoolingapp.dto.EmergencyRequestDto;
+import com.carpool.carpoolingapp.dto.EmergencyResponseDto; // ADD THIS IMPORT
+import com.carpool.carpoolingapp.model.EmergencyRequest;
+import com.carpool.carpoolingapp.service.EmergencyService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/emergency")
 public class EmergencyController {
 
-    private final EmergencyDispatchService emergencyDispatchService;
+    private final EmergencyService emergencyService;
 
-    public EmergencyController(EmergencyDispatchService emergencyDispatchService) {
-        this.emergencyDispatchService = emergencyDispatchService;
+    public EmergencyController(EmergencyService emergencyService) {
+        this.emergencyService = emergencyService;
     }
 
     @PostMapping("/request")
-    public ResponseEntity<String> requestEmergencyRide(@RequestBody EmergencyRequest request) {
-        emergencyDispatchService.handleEmergencyRequest(request);
-        return ResponseEntity.ok("Emergency alert has been broadcast to nearby drivers.");
+    public ResponseEntity<EmergencyRequest> requestEmergencyRide(@RequestBody EmergencyRequestDto requestDto) {
+        EmergencyRequest newRequest = emergencyService.createEmergencyRequest(requestDto);
+        return ResponseEntity.ok(newRequest);
+    }
+
+    @PostMapping("/request/{requestId}/accept")
+    public ResponseEntity<EmergencyRequest> acceptEmergencyRequest(@PathVariable Long requestId) {
+        EmergencyRequest acceptedRequest = emergencyService.acceptRequest(requestId);
+        return ResponseEntity.ok(acceptedRequest);
+    }
+
+    @PostMapping("/request/{requestId}/complete")
+    public ResponseEntity<Void> completeEmergencyRequest(@PathVariable Long requestId) {
+        emergencyService.completeRequest(requestId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/request/{requestId}/cancel")
+    public ResponseEntity<Void> cancelEmergencyRequest(@PathVariable Long requestId) {
+        emergencyService.cancelRequestByRider(requestId);
+        return ResponseEntity.ok().build();
+    }
+
+    // CHANGE THE RETURN TYPE HERE
+    @GetMapping("/driver/active")
+    public ResponseEntity<EmergencyResponseDto> getActiveRequestForDriver() {
+        return emergencyService.getActiveRequestForDriver()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    // AND CHANGE THE RETURN TYPE HERE
+    @GetMapping("/rider/active")
+    public ResponseEntity<EmergencyResponseDto> getActiveRequestForRider() {
+        return emergencyService.getActiveRequestForRider()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
     }
 }

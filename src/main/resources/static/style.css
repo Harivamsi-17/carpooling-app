@@ -215,3 +215,86 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
 .remove-booking-btn:hover {
     background-color: #a72835; /* A darker red for hover effect */
 }
+/* Add these styles to the bottom of your file */
+
+.emergency-btn {
+    background-color: #dc3545; /* Red to stand out */
+    border-color: #dc3545;
+}
+
+.emergency-btn a {
+    color: white !important;
+}
+
+.emergency-instructions {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    font-size: 1.1rem;
+}
+
+#hospital-list-container h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.hospital-card {
+    background: var(--light-card-bg);
+    border: 1px solid var(--light-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.hospital-card h3 {
+    margin-bottom: 0.5rem;
+}
+
+.hospital-card p {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.hospital-card button {
+    margin-top: auto;
+}
+/* Emergency Modal Styles */
+#emergency-modal {
+    position: fixed;
+    z-index: 1002;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#emergency-modal .modal-content {
+    background-color: var(--dark-card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--dark-border);
+    text-align: center;
+    max-width: 400px;
+}
+
+#emergency-modal .modal-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-around;
+}
+/* Styling for the active emergency ride card */
+.emergency-ride-card {
+    border: 2px solid var(--danger-color) !important;
+    background-color: #2c1a1d !important; /* Dark red background */
+}
+
+.emergency-ride-card h3 {
+    color: var(--danger-color);
+}
