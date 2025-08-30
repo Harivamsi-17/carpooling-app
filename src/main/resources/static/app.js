@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- GLOBAL STATE ---
-    const API_BASE_URL = 'http://localhost:8080/api';
+    // const API_BASE_URL = 'http://localhost:8080/api';
+    const API_BASE_URL = 'https://carpooling-backend.onrender.com/api'; // <-- CHANGE THIS
     let currentUserRole = null;
     let stompClient = null;
     let currentUserLocation = null;
