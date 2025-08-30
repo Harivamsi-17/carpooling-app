@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- GLOBAL STATE ---
-    // const API_BASE_URL = 'http://localhost:8080/api';
+    //const API_BASE_URL = 'http://localhost:8080/api';
     const API_BASE_URL = '/api'; // <-- CHANGE THIS
     let currentUserRole = null;
     let stompClient = null;
