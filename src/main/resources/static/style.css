@@ -290,11 +290,27 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
     justify-content: space-around;
 }
 /* Styling for the active emergency ride card */
+/* Default (Light Mode) Emergency Card Styles */
 .emergency-ride-card {
-    border: 2px solid var(--danger-color) !important;
-    background-color: #2c1a1d !important; /* Dark red background */
+    background-color: #ffe6e6 !important;
+    border-color: #ff6666 !important;
 }
 
+.emergency-ride-card p,
 .emergency-ride-card h3 {
+    color: #cc0000 !important;
+}
+
+/* Dark Mode Overrides */
+body.dark-mode .emergency-ride-card {
+    background-color: #2c1a1d !important;
+    border-color: var(--danger-color) !important;
+}
+
+body.dark-mode .emergency-ride-card h3 {
     color: var(--danger-color);
+}
+/* For 'p' tags, we let the default dark-mode text color apply */
+body.dark-mode .emergency-ride-card p {
+    color: var(--dark-text) !important;
 }
