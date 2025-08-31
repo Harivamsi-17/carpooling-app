@@ -14,7 +14,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Allow all paths
-                        .allowedOrigins("http://localhost:8888","http://127.0.0.1:8888") // Allow live-server
+                        .allowedOrigins("http://localhost:8888","http://127.0.0.1:8888","https://carpooling-app-1-hq5d.onrender.com") // Allow live-server
                         .allowedMethods("*"); // Allow all methods
             }
         };
