@@ -59,7 +59,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // THIS RULE MUST COME FIRST
                         .requestMatchers("/", "/index.html", "/style.css", "/app.js", "/favicon.ico").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/users/register", "/api/users/login").permitAll()
@@ -67,7 +66,6 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // ADD THESE TWO LINES
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authenticationProvider(authenticationProvider())
@@ -84,7 +82,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Apply CORS to everything, including /ws
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 }
