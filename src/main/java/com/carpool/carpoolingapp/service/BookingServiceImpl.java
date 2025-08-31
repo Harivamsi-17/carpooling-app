@@ -55,18 +55,27 @@ public class BookingServiceImpl implements BookingService {
         booking.setRider(rider);
         booking.setStatus(BookingStatus.PENDING);
         Booking savedBooking = bookingRepository.save(booking);
+
         String message = "New booking request with ID: " + savedBooking.getId() + " for ride ID: " + rideId;
-//        kafkaTemplate.send("booking-notifications", message)
-//                .whenComplete((result, ex) -> {
-//                    if (ex == null) {
-//                        // This runs on SUCCESS
-//                        System.out.println("✅ Booking message sent successfully for ride: " + result.getProducerRecord().value());
-//                    } else {
-//                        // This runs on FAILURE
-//                        System.err.println("❌ Failed to send booking message: " + ex.getMessage());
-//                    }
-//                });
+
+// ✅ Wrap Kafka in try/catch so booking always succeeds
+        try {
+            kafkaTemplate.send("booking-notifications", message)
+                    .whenComplete((result, ex) -> {
+                        if (ex == null) {
+                            System.out.println("✅ Booking message sent successfully for ride: "
+                                    + result.getProducerRecord().value());
+                        } else {
+                            System.err.println("❌ Failed to send booking message: " + ex.getMessage());
+                        }
+                    });
+        } catch (Exception e) {
+            // Kafka not running → log it and move on
+            System.err.println("⚠️ Kafka not available, skipping message: " + e.getMessage());
+        }
+
         return savedBooking;
+
     }
 
     @Override
