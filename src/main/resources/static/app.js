@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <input type="text" id="ride-destination" placeholder="Destination" required>
                 <input type="datetime-local" id="ride-departureTime" required>
                 <input type="number" id="ride-availableSeats" placeholder="Available Seats" required min="1">
-                <button type="submit">Post Ride</button>
+                <input type="number" id="ride-price" placeholder="Total Ride Price (e.g., 50.00)" required min="0" step="0.01"> <button type="submit">Post Ride</button>
             </form>
         </div>`;
 
