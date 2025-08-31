@@ -1,10 +1,22 @@
 package com.carpool.carpoolingapp.service;
 
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NotificationService {
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public NotificationService(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    // 🔹 Direct WebSocket push (called from BookingServiceImpl)
+    public void notifyDriver(Long driverId, String message) {
+        String destination = "/topic/driver/" + driverId;
+        messagingTemplate.convertAndSend(destination, message);
+    }
 
     @KafkaListener(topics = "booking-notifications", groupId = "carpooling-group")
     public void handleBookingNotification(String message) {

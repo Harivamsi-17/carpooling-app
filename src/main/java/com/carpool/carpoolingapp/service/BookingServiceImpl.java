@@ -24,12 +24,14 @@ public class BookingServiceImpl implements BookingService {
     private final RideRepository rideRepository;
     private final UserRepository userRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final NotificationService notificationService;
 
-    public BookingServiceImpl(BookingRepository bookingRepository, RideRepository rideRepository, UserRepository userRepository, KafkaTemplate<String, String> kafkaTemplate) {
+    public BookingServiceImpl(BookingRepository bookingRepository, RideRepository rideRepository, UserRepository userRepository, KafkaTemplate<String, String> kafkaTemplate,NotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.rideRepository = rideRepository;
         this.userRepository = userRepository;
         this.kafkaTemplate = kafkaTemplate;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -56,23 +58,14 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING);
         Booking savedBooking = bookingRepository.save(booking);
 
-        String message = "New booking request with ID: " + savedBooking.getId() + " for ride ID: " + rideId;
+        notificationService.notifyDriver(
+                ride.getDriver().getId(),
+                "📢 New booking request from " + rider.getFullName() + " for ride #" + rideId
+        );
 
-// ✅ Wrap Kafka in try/catch so booking always succeeds
-        try {
-            kafkaTemplate.send("booking-notifications", message)
-                    .whenComplete((result, ex) -> {
-                        if (ex == null) {
-                            System.out.println("✅ Booking message sent successfully for ride: "
-                                    + result.getProducerRecord().value());
-                        } else {
-                            System.err.println("❌ Failed to send booking message: " + ex.getMessage());
-                        }
-                    });
-        } catch (Exception e) {
-            // Kafka not running → log it and move on
-            System.err.println("⚠️ Kafka not available, skipping message: " + e.getMessage());
-        }
+        // ✅ (Optional) Still send to Kafka for logging
+        kafkaTemplate.send("booking-notifications",
+                "New booking request with ID: " + savedBooking.getId() + " for ride ID: " + rideId);
 
         return savedBooking;
 
