@@ -135,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 stompClient.subscribe('/user/queue/notifications', (message) => {
                     const notification = JSON.parse(message.body);
                     showToast(notification.message, 'success');
-                    // If the emergency request was accepted, refresh the rider's view
                     if (notification.type === 'EMERGENCY_ACCEPTED') {
                         fetchMyBookings();
                     }
@@ -152,12 +151,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         acceptBtn.dataset.requestId = notification.requestId;
                         modal.classList.remove('hidden');
                     });
+
+                    // 👇 Add driver-specific booking notifications
+                    const driverId = localStorage.getItem("userId"); // or however you store logged-in driver id
+                    stompClient.subscribe(`/topic/driver/${driverId}`, (msg) => {
+                        console.log("📩 Driver received:", msg.body);
+                        showToast("New booking: " + msg.body, "info");
+                    });
                 }
             }, (error) => {
                 console.error('WebSocket connection error: ' + error);
             });
         }
     };
+
 
     const getUserLocation = () => {
         return new Promise((resolve, reject) => {
