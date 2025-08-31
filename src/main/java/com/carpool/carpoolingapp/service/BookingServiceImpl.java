@@ -56,7 +56,16 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING);
         Booking savedBooking = bookingRepository.save(booking);
         String message = "New booking request with ID: " + savedBooking.getId() + " for ride ID: " + rideId;
-        kafkaTemplate.send("booking-notifications", message);
+        kafkaTemplate.send("booking-notifications", message)
+                .whenComplete((result, ex) -> {
+                    if (ex == null) {
+                        // This runs on SUCCESS
+                        System.out.println("✅ Booking message sent successfully for ride: " + result.getProducerRecord().value());
+                    } else {
+                        // This runs on FAILURE
+                        System.err.println("❌ Failed to send booking message: " + ex.getMessage());
+                    }
+                });
         return savedBooking;
     }
 
