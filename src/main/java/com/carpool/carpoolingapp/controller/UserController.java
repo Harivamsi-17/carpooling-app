@@ -8,8 +8,6 @@ import com.carpool.carpoolingapp.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,13 +19,12 @@ public class UserController {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
-    private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
 
-    public UserController(UserService userService, AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtService jwtService) {
+    // The UserDetailsService is not needed here, so it can be removed from the constructor
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
-        this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
     }
 
@@ -39,15 +36,17 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        // Authenticate the user. If credentials are bad, this throws an exception (which Spring Security handles as a 403).
+        // Authenticate the user. If credentials are bad, this throws an exception.
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
 
-        // If authentication succeeds, generate a JWT.
+        // If authentication is successful, find the user to generate a JWT.
         final User user = userService.findByEmail(loginRequest.getEmail());
-        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
-        final String token = jwtService.generateToken(userDetails, user); // Pass both userDetails and user object
+
+        // --- THIS IS THE CORRECTED LINE ---
+        // We now pass only the 'user' object, which is what the method requires.
+        final String token = jwtService.generateToken(user);
 
         // Return the token and the user's full name.
         return ResponseEntity.ok(new LoginResponse(token, user.getFullName()));
