@@ -3,15 +3,17 @@ package com.carpool.carpoolingapp.controller;
 import com.carpool.carpoolingapp.dto.LoginRequest;
 import com.carpool.carpoolingapp.dto.LoginResponse;
 import com.carpool.carpoolingapp.model.User;
-import com.carpool.carpoolingapp.repository.UserRepository; // <-- Import this
 import com.carpool.carpoolingapp.service.JwtService;
 import com.carpool.carpoolingapp.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users")
@@ -19,42 +21,35 @@ public class UserController {
 
     private final UserService userService;
     private final AuthenticationManager authenticationManager;
+    private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
-    private final UserRepository userRepository; // <-- Add this
 
-    @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtService jwtService, UserRepository userRepository) { // <-- Add to constructor
+    public UserController(UserService userService, AuthenticationManager authenticationManager, UserDetailsService userDetailsService, JwtService jwtService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
+        this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
-        this.userRepository = userRepository; // <-- Initialize this
     }
 
     @PostMapping("/register")
-    public User registerUser(@RequestBody User user) {
-        return userService.registerUser(user);
-    }
-
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public ResponseEntity<User> registerUser(@RequestBody User user) {
+        User registeredUser = userService.registerUser(user);
+        return ResponseEntity.ok(registeredUser);
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@RequestBody LoginRequest request) {
-        // 1. Authenticate the user
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+        // Authenticate the user. If credentials are bad, this throws an exception (which Spring Security handles as a 403).
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
         );
 
-        // 2. Find the user in the database to get their full name
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalStateException("User not found after authentication."));
+        // If authentication succeeds, generate a JWT.
+        final User user = userService.findByEmail(loginRequest.getEmail());
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+        final String token = jwtService.generateToken(userDetails, user); // Pass both userDetails and user object
 
-        // 3. Generate the JWT
-        String token = jwtService.generateToken(user);
-
-        // 4. Return the token AND the full name
-        return new LoginResponse(token, user.getFullName());
+        // Return the token and the user's full name.
+        return ResponseEntity.ok(new LoginResponse(token, user.getFullName()));
     }
 }
