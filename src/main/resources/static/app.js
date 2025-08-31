@@ -671,10 +671,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('register-container').classList.add('hidden');
         document.getElementById('login-container').classList.remove('hidden');
     });
+    // CORRECTED NAVIGATION LISTENERS
     document.getElementById('nav-post-ride').addEventListener('click', (e) => {
         e.preventDefault();
         switchView('post-ride-page');
-        // This adds the form HTML and its submit listener
+        // Inject the HTML and attach the form's specific event listener
         document.getElementById('post-ride-page').innerHTML = postRideView;
         document.getElementById('post-ride-form').addEventListener('submit', handlePostRide);
     });
@@ -682,12 +683,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nav-search-rides').addEventListener('click', (e) => {
         e.preventDefault();
         switchView('search-rides-page');
-        // This adds the form HTML and its submit listener
+        // Inject the HTML and attach the form's specific event listener
         document.getElementById('search-rides-page').innerHTML = searchRidesView;
         document.getElementById('search-ride-form').addEventListener('submit', handleSearchRide);
     });
-    document.getElementById('nav-my-rides').addEventListener('click', (e) => { e.preventDefault(); fetchMyRides(); });
-    document.getElementById('nav-my-bookings').addEventListener('click', (e) => { e.preventDefault(); fetchMyBookings(); });
+
+    document.getElementById('nav-my-rides').addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('my-rides-page');
+        fetchMyRides();
+    });
+
+    document.getElementById('nav-my-bookings').addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView('my-bookings-page');
+        fetchMyBookings();
+    });
     document.getElementById('nav-emergency').addEventListener('click', (e) => { e.preventDefault(); showEmergencyPage(); });
 
     themeToggleButton.addEventListener('click', () => {
