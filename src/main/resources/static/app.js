@@ -11,6 +11,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const appContent = document.getElementById('app-content');
     const welcomeMessage = document.getElementById('welcome-message');
     const themeToggleButton = document.getElementById('theme-toggle-btn');
+    // --- VIEW TEMPLATES (HTML as strings) ---
+    const postRideView = `
+        <div class="view-form">
+            <h3>Post a New Ride</h3>
+            <form id="post-ride-form">
+                <input type="text" id="ride-origin" placeholder="Origin" required>
+                <input type="text" id="ride-destination" placeholder="Destination" required>
+                <input type="datetime-local" id="ride-departureTime" required>
+                <input type="number" id="ride-availableSeats" placeholder="Available Seats" required min="1">
+                <button type="submit">Post Ride</button>
+            </form>
+        </div>`;
+
+    const searchRidesView = `
+        <div class="view-form">
+            <h3>Search for a Ride</h3>
+            <form id="search-ride-form">
+                <input type="text" id="search-origin" placeholder="Origin" required>
+                <input type="text" id="search-destination" placeholder="Destination" required>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+        <div id="ride-results" class="results-container"></div>`;
 
     // --- HELPER FUNCTIONS ---
     const switchView = (pageId) => {
