@@ -191,10 +191,7 @@ public class BookingServiceImpl implements BookingService {
         String destination = "/user/" + ride.getDriver().getEmail() + "/queue/notifications";
         String messagePayload = "New booking request from " + rider.getFullName() + " for your ride to " + ride.getDestination();
         // 🔔 Notify driver instantly via WebSocket
-        messagingTemplate.convertAndSend(
-                "/topic/driver/" + ride.getDriver().getId(),
-                "New booking request from " + rider.getFullName() + " for ride #" + rideId
-        );
+        messagingTemplate.convertAndSend(destination, Map.of("message", messagePayload));
 
         return saved;
     }
