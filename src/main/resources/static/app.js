@@ -154,9 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // 👇 Add driver-specific booking notifications
                     const driverId = localStorage.getItem("userId"); // or however you store logged-in driver id
-                    stompClient.subscribe(`/topic/driver/${driverId}`, (msg) => {
-                        console.log("📩 Driver received:", msg.body);
-                        showToast("New booking: " + msg.body, "info");
+                    stompClient.subscribe('/user/queue/notifications', (message) => {
+                        const notification = JSON.parse(message.body);
+                        showToast(notification.message, 'success');
                     });
                 }
             }, (error) => {

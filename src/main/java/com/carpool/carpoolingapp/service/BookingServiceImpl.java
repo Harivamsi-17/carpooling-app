@@ -188,7 +188,8 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING);
 
         Booking saved = bookingRepository.save(booking);
-
+        String destination = "/user/" + ride.getDriver().getEmail() + "/queue/notifications";
+        String messagePayload = "New booking request from " + rider.getFullName() + " for your ride to " + ride.getDestination();
         // 🔔 Notify driver instantly via WebSocket
         messagingTemplate.convertAndSend(
                 "/topic/driver/" + ride.getDriver().getId(),
