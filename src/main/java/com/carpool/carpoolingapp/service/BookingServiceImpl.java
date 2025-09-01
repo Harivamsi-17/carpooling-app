@@ -179,6 +179,9 @@ public class BookingServiceImpl implements BookingService {
         Ride ride = rideRepository.findById(rideId)
                 .orElseThrow(() -> new IllegalStateException("Ride not found."));
 
+        if (ride.getDriver().getId().equals(rider.getId())) {
+            throw new IllegalStateException("Driver cannot book their own ride.");
+        }
         Booking booking = new Booking();
         booking.setRide(ride);
         booking.setRider(rider);
