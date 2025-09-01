@@ -688,8 +688,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- STATIC EVENT LISTENERS ---
     document.getElementById('register-form').addEventListener('submit', handleRegister);
     document.getElementById('login-form').addEventListener('submit', handleLogin);
-    document.getElementById('post-ride-form').addEventListener('submit', handlePostRide);
-    document.getElementById('search-ride-form').addEventListener('submit', handleSearchRide);
+    //document.getElementById('post-ride-form').addEventListener('submit', handlePostRide);
+    //document.getElementById('search-ride-form').addEventListener('submit', handleSearchRide);
     document.getElementById('nav-logout').addEventListener('click', logout);
     document.getElementById('show-register-link').addEventListener('click', (e) => {
         e.preventDefault();
