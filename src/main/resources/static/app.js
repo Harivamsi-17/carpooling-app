@@ -154,10 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     // 👇 Add driver-specific booking notifications
                     const driverId = localStorage.getItem("userId"); // or however you store logged-in driver id
-                    stompClient.subscribe('/user/queue/notifications', (message) => {
-                        const notification = JSON.parse(message.body);
-                        showToast(notification.message, 'success');
-                    });
+                    // stompClient.subscribe('/user/queue/notifications', (message) => {
+                    //     const notification = JSON.parse(message.body);
+                    //     showToast(notification.message, 'success');
+                    // });
                 }
             }, (error) => {
                 console.error('WebSocket connection error: ' + error);

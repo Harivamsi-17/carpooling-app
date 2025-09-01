@@ -183,6 +183,14 @@ public class BookingServiceImpl implements BookingService {
         if (ride.getDriver().getId().equals(rider.getId())) {
             throw new IllegalStateException("Driver cannot book their own ride.");
         }
+        // ✅ Prevent duplicate booking
+        boolean alreadyBooked = bookingRepository.findByRideId(rideId).stream()
+                .anyMatch(b -> b.getRider().getId().equals(rider.getId())
+                        && (b.getStatus() == BookingStatus.PENDING || b.getStatus() == BookingStatus.CONFIRMED));
+
+        if (alreadyBooked) {
+            throw new IllegalStateException("You already have a booking for this ride.");
+        }
         Booking booking = new Booking();
         booking.setRide(ride);
         booking.setRider(rider);
