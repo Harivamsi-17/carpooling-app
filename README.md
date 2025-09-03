@@ -22,8 +22,8 @@ A complete full-stack carpooling application designed to manage ride-sharing log
 ## Screenshots
 
 **Authentication & User Profile (Light & Dark Mode)**
-<img width="1919" height="928" alt="Screenshot 2025-09-03 143923" src="https://github.com/user-attachments/assets/f3243948-baa4-46ae-918b-8d2adf36aca0" />
 <img width="1919" height="927" alt="Screenshot 2025-09-03 144043" src="https://github.com/user-attachments/assets/7bcee4d1-0acf-44f2-b039-1254d85b6b33" />
+<img width="1919" height="928" alt="Screenshot 2025-09-03 143923" src="https://github.com/user-attachments/assets/f3243948-baa4-46ae-918b-8d2adf36aca0" />
 
 **Ride Management & Booking (Search, Create, and View Rides)**
 <img width="1919" height="927" alt="Screenshot 2025-09-03 144415" src="https://github.com/user-attachments/assets/6000f311-9ce9-4674-b0ce-8e735a3c9b0c" />
