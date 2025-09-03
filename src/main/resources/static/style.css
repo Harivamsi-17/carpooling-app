@@ -52,7 +52,6 @@ nav {
 h1, h2 { margin-bottom: 1.5rem; }
 form, .view-form { display: flex; flex-direction: column; }
 .view-form {
-    /* Change the max-width to a larger value like 900px */
     max-width: 900px;
     margin: 2rem auto;
     display: flex;
@@ -64,15 +63,13 @@ button { padding: 14px; border: none; background: linear-gradient(45deg, var(--s
 .toggle-link a { color: var(--primary-color); text-decoration: none; font-weight: 600; }
 
 .page {
-    /* This forces the content (heading, forms, results) to stack vertically */
     display: flex;
     flex-direction: column;
-    align-items: center; /* Horizontally centers the content block */
+    align-items: center;
     width: 100%;
 }
 
 .page h1 {
-    /* This ensures the heading takes its own line */
     width: 100%;
     text-align: center;
     color: var(--primary-color);
@@ -81,56 +78,51 @@ button { padding: 14px; border: none; background: linear-gradient(45deg, var(--s
 }
 
 .results-container {
-    /* The existing two-column grid layout */
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 30px;
-
-    /* New rules to control the width and prevent it from stretching too far */
     width: 90%;
-    max-width: 1200px; /* Adjust this value as needed for large screens */
+    max-width: 1200px;
 }
 
 .card {
     background: var(--light-card-bg);
     border: 1px solid var(--light-border);
     border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* Slightly more prominent shadow */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
-    padding: 20px; /* Add internal padding to the card itself */
+    padding: 20px;
 }
 
 .card-content {
-    padding: 0; /* Remove padding as it's now on the card itself */
-    margin-bottom: 15px; /* Space between content and actions/bookings */
+    margin-bottom: 15px;
 }
 
 .card p {
-    margin-bottom: 8px; /* Slightly more space between text lines */
-    font-size: 1.05rem; /* Make text a bit larger for readability */
+    margin-bottom: 8px;
+    font-size: 1.05rem;
 }
 
 .card p strong {
-    color: var(--primary-color); /* Highlight key info */
+    color: var(--primary-color);
 }
 
 .card-actions {
-    padding: 0; /* Remove padding */
-    margin-top: auto; /* Push buttons to the bottom */
-    display: flex; /* Use flex for button layout */
-    justify-content: flex-end; /* Align button to the right */
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .card-actions button {
-    padding: 10px 20px; /* Larger buttons */
+    padding: 10px 20px;
     font-size: 1rem;
-    border-radius: 8px; /* Consistent rounded corners */
+    border-radius: 8px;
 }
 
 .bookings-list {
-    margin-top: 20px; /* More space above the bookings list */
+    margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--light-border);
 }
@@ -139,35 +131,34 @@ button { padding: 14px; border: none; background: linear-gradient(45deg, var(--s
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0; /* More vertical padding for each booking item */
-    border-bottom: 1px dashed var(--light-border); /* Dashed line for subtle separation */
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--light-border);
 }
 
 .booking-item:last-child {
-    border-bottom: none; /* No border for the last item */
+    border-bottom: none;
 }
 
 .booking-item span {
-    font-size: 0.95rem; /* Make booking item text slightly larger */
+    font-size: 0.95rem;
 }
 
 .booking-actions {
     display: flex;
-    gap: 10px; /* Space between confirm/cancel buttons */
+    gap: 10px;
 }
 
 .booking-item button {
-    padding: 8px 15px; /* Larger booking action buttons */
+    padding: 8px 15px;
     font-size: 0.9rem;
     border-radius: 6px;
-    margin: 0; /* Override any default button margins */
+    margin: 0;
 }
 
-/* Ensure headings have enough space */
 h1 {
-    margin-bottom: 30px; /* More space below the main heading */
-    font-size: 2.5rem; /* Larger heading */
-    text-align: center; /* Center the main heading */
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+    text-align: center;
     color: var(--primary-color);
 }
 
@@ -198,10 +189,10 @@ body.dark-mode .form-container, body.dark-mode .card { background-color: var(--d
 body.dark-mode input, body.dark-mode select { background-color: #2a2a2a; color: var(--dark-text); border-color: #444444; }
 body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--dark-text); }
 
-/* Styling for the rider's buttons on the "My Bookings" page */
+/* --- Misc Button & Component Styles --- */
 .cancel-booking-rider-btn,
 .remove-booking-btn {
-    background-color: var(--danger-color); /* Use the red color variable */
+    background-color: var(--danger-color);
     color: white;
     padding: 8px 16px;
     font-size: 0.9rem;
@@ -213,12 +204,10 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
 
 .cancel-booking-rider-btn:hover,
 .remove-booking-btn:hover {
-    background-color: #a72835; /* A darker red for hover effect */
+    background-color: #a72835;
 }
-/* Add these styles to the bottom of your file */
-
 .emergency-btn {
-    background-color: #dc3545; /* Red to stand out */
+    background-color: #dc3545;
     border-color: #dc3545;
 }
 
@@ -248,20 +237,11 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
     flex-direction: column;
 }
 
-.hospital-card h3 {
-    margin-bottom: 0.5rem;
-}
+.hospital-card h3 { margin-bottom: 0.5rem; }
+.hospital-card p { margin-bottom: 1rem; font-size: 0.9rem; color: #6c757d; }
+.hospital-card button { margin-top: auto; }
 
-.hospital-card p {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    color: #6c757d;
-}
-
-.hospital-card button {
-    margin-top: auto;
-}
-/* Emergency Modal Styles */
+/* --- Modal Styles --- */
 #emergency-modal {
     position: fixed;
     z-index: 1002;
@@ -282,6 +262,7 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
     border: 1px solid var(--dark-border);
     text-align: center;
     max-width: 400px;
+    width: 90%; /* Ensure modal fits on small screens */
 }
 
 #emergency-modal .modal-actions {
@@ -289,8 +270,8 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
     display: flex;
     justify-content: space-around;
 }
-/* Styling for the active emergency ride card */
-/* Default (Light Mode) Emergency Card Styles */
+
+/* --- Emergency Card Styles --- */
 .emergency-ride-card {
     background-color: #ffe6e6 !important;
     border-color: #ff6666 !important;
@@ -307,10 +288,59 @@ body.dark-mode .emergency-ride-card {
     border-color: var(--danger-color) !important;
 }
 
-body.dark-mode .emergency-ride-card h3 {
-    color: var(--danger-color);
+body.dark-mode .emergency-ride-card h3 { color: var(--danger-color); }
+body.dark-mode .emergency-ride-card p { color: var(--dark-text) !important; }
+
+
+/*
+==============================================
+--- Media Queries for Responsiveness ---
+==============================================
+*/
+
+/* For Tablets and smaller devices (<= 900px) */
+@media (max-width: 900px) {
+    .results-container {
+        /* Switch from two columns to a single column */
+        grid-template-columns: 1fr;
+        width: 100%; /* Use more of the screen width */
+    }
+
+    .view-form {
+        width: 90%; /* Allow form to be more flexible */
+    }
 }
-/* For 'p' tags, we let the default dark-mode text color apply */
-body.dark-mode .emergency-ride-card p {
-    color: var(--dark-text) !important;
+
+/* For Mobile Phones (<= 600px) */
+@media (max-width: 600px) {
+    main {
+        padding: 10px; /* Reduce main padding */
+    }
+
+    nav {
+        /* Stack nav items vertically */
+        flex-direction: column;
+        padding: 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .nav-controls {
+        /* Allow nav controls to wrap if needed */
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #welcome-message {
+        font-size: 1.1rem;
+    }
+
+    .page h1, h1 {
+        /* Reduce heading size to prevent awkward line breaks */
+        font-size: 1.8rem;
+    }
+
+    .form-container {
+        /* Reduce padding to give more space for content */
+        padding: 1.5rem;
+    }
 }
