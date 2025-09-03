@@ -242,6 +242,7 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
 .hospital-card button { margin-top: auto; }
 
 /* --- Modal Styles --- */
+/* Emergency Modal Styles */
 #emergency-modal {
     position: fixed;
     z-index: 1002;
@@ -256,19 +257,29 @@ body.dark-mode #theme-toggle-btn { border-color: var(--dark-text); color: var(--
 }
 
 #emergency-modal .modal-content {
-    background-color: var(--dark-card-bg);
+    /* Light mode default styles */
+    background-color: var(--light-card-bg);
+    color: var(--light-text);
     padding: 30px;
     border-radius: 12px;
-    border: 1px solid var(--dark-border);
+    border: 1px solid var(--light-border);
     text-align: center;
     max-width: 400px;
-    width: 90%; /* Ensure modal fits on small screens */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
 #emergency-modal .modal-actions {
     margin-top: 20px;
     display: flex;
     justify-content: space-around;
+    gap: 1rem;
+}
+
+/* Dark mode override for the modal */
+body.dark-mode #emergency-modal .modal-content {
+    background-color: var(--dark-card-bg);
+    color: var(--dark-text);
+    border: 1px solid var(--dark-border);
 }
 
 /* --- Emergency Card Styles --- */
